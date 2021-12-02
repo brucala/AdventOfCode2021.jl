@@ -9,17 +9,17 @@ import .Utils: parse_input
 
 export solve1, solve2, parse_input
 
-function parse_input(x)
-    for line = readlines(IOBuffer(x))
+function parse_input(x::AbstractString)
+    for line = splitlines(x)
     end
 end
 
 function solve1(x)
-    data = parse_input(x)
+
 end
 
 function solve2(x)
-    data = parse_input(x)
+
 end
 
 end  # module
