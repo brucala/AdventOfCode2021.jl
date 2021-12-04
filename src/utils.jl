@@ -24,8 +24,9 @@ splitlines(s::AbstractString) = split(strip(s), '\n')
 
 stripspaces(s::AbstractString) = replace(s, " " => "")
 
-getgrid(s::AbstractString, fmap=identity) = getgrid(splitlines(rstrip(s, '\n')), fmap)
-function getgrid(lines::Vector{T}, fmap=identity) where T <: AbstractString
+getgrid(s::AbstractString; fmap=identity, sep=nothing) = getgrid(splitlines(rstrip(s, '\n')), fmap, sep)
+function getgrid(lines::Vector{T}, fmap=identity, sep=nothing) where T <: AbstractString
+    isnothing(sep) || (lines = split.(lines, sep, keepempty=false))
     n, m = length(lines), length(first(lines))
     grid = map(fmap, Iterators.flatten(lines))
     return reshape(grid, (m,n)) |> permutedims  # so it's well oriented
