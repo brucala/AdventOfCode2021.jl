@@ -23,40 +23,28 @@ end
 ### Part 1
 ###
 
-function npaths(cave, room, seen)
+function npaths(cave, room, seen, twice)
     room == "end" && return 1
     newseen = copy(seen)
     room == lowercase(room) && push!(newseen, room)
     n = 0
     for nextroom in cave[room]
         if nextroom ∉ seen
-            n += npaths(cave, nextroom, newseen)
+            n += npaths(cave, nextroom, newseen, twice)
+        elseif !twice
+            n += npaths(cave, nextroom, newseen, true)
         end
     end
     return n
 end
 
-solve1(x) = npaths(x, "start", Set{String}())
+solve1(x) = npaths(x, "start", Set{String}(), true)
 
 ###
 ### Part 2
 ###
 
-function npaths2(cave, room, seen, twice)
-    room == "end" && return 1
-    newseen = copy(seen)
-    room == lowercase(room) && push!(newseen, room)
-    n = 0
-    for nextroom in cave[room]
-        if nextroom ∉ seen
-            n += npaths2(cave, nextroom, newseen, twice)
-        elseif !twice
-            n += npaths2(cave, nextroom, newseen, true)
-        end
-    end
-    return n
-end
 
-solve2(x) = npaths2(x, "start", Set{String}(), false)
+solve2(x) = npaths(x, "start", Set{String}(), false)
 
 end  # module
