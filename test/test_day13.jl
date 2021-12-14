@@ -5,7 +5,7 @@ using AdventOfCode2021.Day13
 
 nday = 13
 
-data = parse_input(nday)
+data = parse_input(nday);
 
 test = parse_input(
 """
@@ -31,7 +31,7 @@ test = parse_input(
 fold along y=7
 fold along x=5
 """
-)
+);
 
 @testset "Day$nday tests" begin
     @test solve1(test) == 17

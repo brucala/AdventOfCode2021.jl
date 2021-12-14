@@ -86,9 +86,9 @@ function Base.show(io::IO, p::Paper)
     for y in 0:m-1
         for x in 0:n-1
             if (x => y) in p.points
-                print(io, '#')
+                print(io, 'o')
             else
-                print(io, '.')
+                print(io, ' ')
             end
         end
         println(io)
