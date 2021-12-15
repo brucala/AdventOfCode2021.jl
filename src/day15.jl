@@ -22,7 +22,8 @@ function solve(riskgrid)
     n, m = size(riskgrid)
     while !isempty(pq)
         pos, risk = dequeue_pair!(pq)
-        risk < minrisk[pos...] || continue
+        risk += riskgrid[pos...]
+        (risk < minrisk[pos...] && risk < minrisk[n,m]) || continue
         minrisk[pos...] = risk
         neighbors = [
             pos .+ Δ
