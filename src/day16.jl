@@ -35,37 +35,33 @@ value(p::Packet{Literal}) = value(p.packet)
 value(p::Literal) = p.value
 versions(::Literal) = Int[]
 
-struct Operator <: PacketType
+struct Operator{T} <: PacketType
     length_type_id::Bool
     length::Int
     subpackets::Vector{Packet}
 end
 
-value(p::Packet{Operator}) = value(p.packet, p.type_id)
-function value(p::Operator, type_id)
-    if type_id == 0
-        return sum(value, p.subpackets)
-    elseif type_id == 1
-        return prod(value, p.subpackets)
-    elseif type_id == 2
-        return minimum(value, p.subpackets)
-    elseif type_id == 3
-        return maximum(value, p.subpackets)
-    elseif type_id == 5
-        @assert length(p.subpackets) == 2
-        return value(p.subpackets[1]) > value(p.subpackets[2]) ? 1 : 0
-    elseif type_id == 6
-        @assert length(p.subpackets) == 2
-        return value(p.subpackets[1]) < value(p.subpackets[2]) ? 1 : 0
-    elseif type_id == 7
-        @assert length(p.subpackets) == 2
-        return value(p.subpackets[1]) == value(p.subpackets[2]) ? 1 : 0
-    end
+value(p::Packet{Operator{T}}) where T = value(p.packet)
+value(p::Operator{0}) = sum(value, p.subpackets)
+value(p::Operator{1}) = prod(value, p.subpackets)
+value(p::Operator{2}) = minimum(value, p.subpackets)
+value(p::Operator{3}) = maximum(value, p.subpackets)
+function value(p::Operator{5})
+    @assert length(p.subpackets) == 2
+    value(p.subpackets[1]) > value(p.subpackets[2]) ? 1 : 0
+end
+function value(p::Operator{6})
+    @assert length(p.subpackets) == 2
+    value(p.subpackets[1]) < value(p.subpackets[2]) ? 1 : 0
+end
+function value(p::Operator{7})
+    @assert length(p.subpackets) == 2
+    value(p.subpackets[1]) == value(p.subpackets[2]) ? 1 : 0
 end
 
 versions(p::Operator) = vcat([versions(sp) for sp in p.subpackets]...)
 
-PacketType(type_id::Int) = type_id == 4 ? Literal : Operator
+PacketType(type_id::Int) = type_id == 4 ? Literal : Operator{type_id}
 
 function consume(bits::AbstractString)
     version = parse(Int, bits[1:3], base=2)
@@ -86,7 +82,7 @@ function consume_packet(::Type{Literal}, bits::AbstractString)
     return Literal(literal), bits[i:end]
 end
 
-function consume_packet(::Type{Operator}, bits::AbstractString)
+function consume_packet(::Type{Operator{T}}, bits::AbstractString) where T
     length_type_id = parse(Bool, bits[1])
     len, bits = consume_length(length_type_id, bits[2:end])
     subpackets = Packet[]
@@ -102,7 +98,7 @@ function consume_packet(::Type{Operator}, bits::AbstractString)
             consumed == len && break
         end
     end
-    return Operator(length_type_id, len, subpackets), left
+    return Operator{T}(length_type_id, len, subpackets), left
 end
 function consume_length(length_type_id::Bool, bits)
     l = length_type_id ? 11 : 15
