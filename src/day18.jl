@@ -2,6 +2,7 @@ module Day18
 include("utils.jl")
 using .Utils
 import .Utils: parse_input
+using JSON
 
 export solve1, solve2, parse_input
 
@@ -61,7 +62,7 @@ end
 function parse_input(x::AbstractString)
     homework = SFNumber[]
     for line in splitlines(x)
-        sfvector = eval(Meta.parse(line))
+        sfvector = JSON.parse(line)
         push!(homework, SFNumber(sfvector))
     end
     return homework
