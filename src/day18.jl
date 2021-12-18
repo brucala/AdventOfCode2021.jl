@@ -6,8 +6,8 @@ import .Utils: parse_input
 export solve1, solve2, parse_input
 
 struct SFNumber
-    left::Union{Int, SFNumber}
-    right::Union{Int, SFNumber}
+    left::Union{Int,SFNumber}
+    right::Union{Int,SFNumber}
 end
 
 function Base.reduce(sf::SFNumber)
@@ -16,22 +16,18 @@ function Base.reduce(sf::SFNumber)
     return sf
 end
 
-SFNumber(v::Vector) =SFNumber(SFNumber(first(v)), SFNumber(last(v)))
+SFNumber(v::Vector) = SFNumber(SFNumber(first(v)), SFNumber(last(v)))
 SFNumber(n::Int) = n
 
 Base.show(io::IO, sf::SFNumber) = print(io, "[", sf.left, ", ", sf.right, "]")
 
 Base.:+(a::SFNumber, b::SFNumber) = reduce(SFNumber(a, b))
 
-Base.:+(sf::SFNumber, n::Int) = SFNumber(sf.left, sf.right + n)
-Base.:+(n::Int, sf::SFNumber) = SFNumber(n+sf.left, sf.right)
+Base.:+(sf::SFNumber, n::Int) = n == 0 ? sf : SFNumber(sf.left, sf.right + n)
+Base.:+(n::Int, sf::SFNumber) = n == 0 ? sf : SFNumber(n + sf.left, sf.right)
 
 nlevels(sf::SFNumber) = max(nlevels(sf.left), nlevels(sf.right)) + 1
 nlevels(n::Int) = 0
-
-nclosest(sf::SFNumber) = min(nclosest(sf.left), nclosest(sf.right)) + 1
-nclosest(n::Int) = 0
-
 
 issplitable(sf::SFNumber) = issplitable(sf.left) || issplitable(sf.right)
 issplitable(n::Int) = n > 9
@@ -49,10 +45,10 @@ function explode(sf::SFNumber, maxlevel)
         @assert nlevels(sf) == 1
         return 0, (sf.left, sf.right)
     elseif nlevels(sf.left) == maxlevel
-        newleft, (l, r) = explode(sf.left, maxlevel-1)
+        newleft, (l, r) = explode(sf.left, maxlevel - 1)
         return SFNumber(newleft, r + sf.right), (l, 0)
     elseif nlevels(sf.right) == maxlevel
-        newright, (l, r) = explode(sf.right, maxlevel-1)
+        newright, (l, r) = explode(sf.right, maxlevel - 1)
         return SFNumber(sf.left + l, newright), (0, r)
     end
     @warn "didn't explode"
