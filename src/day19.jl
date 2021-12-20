@@ -68,7 +68,10 @@ end
 ### Part 1
 ###
 
-isconsistent(a, b) = counter(abs.(a)) == counter(abs.(b))
+#isconsistent(a, b) = counter(abs.(a)) == counter(abs.(b))
+#isconsistent(a, b) = Set(abs.(a)) == Set(abs.(b))
+isconsistent(a, b) = sum(abs, a) == sum(abs, b)  # way faster than the options above
+
 
 function check_rotation(s1, s2)
     p1 = map(i -> pos(s1, i), 1:length(s1))
@@ -79,7 +82,7 @@ end
 
 function consistent_rotation(s1, s2)
     d1, d2 = s1.distances, s2.distances
-    checked = Set()
+    #checked = Set{Tuple{Vector{Int}, Tuple{Int, Int, Int}}}()
     for (k1, v1) in d1, (k2, v2) in d2
         isconsistent(v1, v2) || continue
         for (key, r) in R
@@ -87,9 +90,9 @@ function consistent_rotation(s1, s2)
             p1 == r * v2 || continue
             p1, p2 = pos(s1, k1[1]), s2.beacons[k2[1]]
             p = r * p2 - p1
-            (p, key) in checked && continue
+            #(p, key) in checked && continue
             check_rotation(s1, Scanner(s2, p, key)) && return key, p
-            push!(checked, (p, key))
+            #push!(checked, (p, key))
         end
     end
     return nothing

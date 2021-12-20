@@ -1,7 +1,6 @@
 module AdventOfCode2021
 
-# day 19 is very slow
-solved_days = vcat(1:18, 20:20)
+solved_days = 1:20
 
 for day = solved_days
     include("day$day.jl")
