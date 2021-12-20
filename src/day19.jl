@@ -103,7 +103,7 @@ function check_overlap!(scanners, i, j)
     rot = consistent_rotation(s1, s2)
     isnothing(rot) && return false
     rot, p = rot
-    println("found consistency between $i and $j, rotation: $rot, translation: $pos")
+    #println("found consistency between $i and $j, rotation: $rot, translation: $pos")
     newscanner = Scanner(s2, p, rot)
     scanners[j] = newscanner
     return true
@@ -117,7 +117,7 @@ function lock!(scanners)
         for j in keys(scanners)
             j in locked && continue
             if check_overlap!(scanners, i, j)
-                println("Scanner $j overlaps with scanner $i")
+                #println("Scanner $j overlaps with scanner $i")
                 push!(queue, j)
                 push!(locked, j)
             end
