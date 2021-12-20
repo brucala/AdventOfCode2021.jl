@@ -66,14 +66,15 @@ function pad(x, padvalue=false)
     return padimage
 end
 
+bin2dec(x) = sum(2^(length(x) - i) * b for (i, b) in enumerate(x))
+
 function enhance(x, algo, padvalue)
     image = pad(x, padvalue)
     n, m = size(image)
     enhanced = copy(image)
     for i in 2:n-1, j in 2:m-1
-        n = BitVector(vec(image[i-1:i+1, j-1:j+1]'))
-        n = replace(bitstring(n), " "=>"")
-        n = parse(Int, n, base=2, )
+        n = vec(view(image, i-1:i+1, j-1:j+1)')
+        n = bin2dec(n)
         enhanced[i, j] = algo[n+1]
     end
     return stripborders(enhanced, padvalue)
