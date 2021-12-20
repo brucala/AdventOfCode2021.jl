@@ -172,7 +172,7 @@ function parse_commandline()
             default = "text"
         "--days", "-d"
             help = "days to benchmark (e.g. 15 or 1:5)"
-            arg_type = Union{Int, UnitRange}
+            arg_type = Union{Int, UnitRange, Vector}
             default = solved_days
     end
 
