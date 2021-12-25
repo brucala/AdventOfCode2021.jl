@@ -59,11 +59,13 @@ move(state, pos, newpos) = Dict(
     for (k, v) in state
 )
 
-isoccupied(state, type) = haskey(state, (TARGET[type], 2)) || (haskey(state, (TARGET[type], 3)) && state[(TARGET[type], 3)] != type)
+function ishomeoccupied(state, type)
+    i = TARGET[type]
+    return any(state[(i, j)]!=type for j in jtaken(state, i))
+end
 
-ishomeblocked(state, type::Char, i::Int) = isoccupied(state, type) || isblocked(state, i, TARGET[type])
-#isblocked(state, i1, i2) = any(i -> haskey(state, (i, 1)), min(i1, i2)+1:max(i1, i2)-1)
-isblocked(state, pos::NTuple{2, Int}) = pos[2] == 3 && haskey(state, (pos[1], 2))
+ishomeblocked(state, type::Char, i::Int) = ishomeoccupied(state, type) || isblocked(state, i, TARGET[type])
+isblocked(state, pos::NTuple{2, Int}) = any(j < pos[2] for j in jtaken(state, pos[1]))
 function isblocked(state, i1::Int, i2::Int)
     taken = taken_corridor(state)
     return i2 in taken || any(in(taken), min(i1, i2)+1:max(i1, i2)-1)
@@ -71,6 +73,8 @@ end
 
 taken_corridor(state) = Int[i for (i, j) in keys(state) if j == 1 && i in ICORRIDOR]
 available_corridor(state) = setdiff(ICORRIDOR, taken_corridor(state))
+
+jtaken(state, itarget) = Int[j for (i, j) in keys(state) if i == itarget]
 
 function Δe(type, pos, newpos)
     e = abs(pos[1] - newpos[1]) # horizontal
@@ -84,7 +88,8 @@ function totarget(state, pos, newpos, energy)
 end
 function tohome(state, pos, energy)
     itarget = TARGET[state[pos]]
-    jtarget = haskey(state, (itarget, 3)) ? 2 : 3
+    taken = jtaken(state, itarget)
+    jtarget = isempty(taken) ? len(state) : minimum(taken) - 1
     newpos = (itarget, jtarget)
     return totarget(state, pos, newpos, energy)
 end
@@ -93,86 +98,60 @@ function tocorridor(state, pos, icorridor, energy)
     return totarget(state, pos, newpos, energy)
 end
 
+len(state) = maximum(last, keys(state))
+
 add!(queue, state, energy) = (!haskey(queue, state) || queue[state] > energy) && (queue[state] = energy)
 
 function update!(queue, state, energy)
     for (pos, type) in state
         (i, j) = pos
-        j == 3 && ishome(type, i) && continue
-        j == 2 && ishome(type, i) && haskey(state, (TARGET[type], 3)) && state[(TARGET[type], 3)] == type && continue
+        ishome(type, i) && !ishomeoccupied(state, type) && continue
         isblocked(state, pos) && continue
         if !iscorridor(j)
             for icorridor in available_corridor(state)
-                #isblocked(state, i, icorridor) || println("adding to queu: $pos -> corridor $icorridor")
                 isblocked(state, i, icorridor) || add!(queue, tocorridor(state, pos, icorridor, energy)...)
             end
         end
-        #ishomeblocked(state, type, i) || println("adding to queu: $pos -> home")
         ishomeblocked(state, type, i) || add!(queue, tohome(state, pos, energy)...)
     end
 end
 
-#function update!(queue, state, energy)
-#    for anphipod in state
-#        (i, j), type = anphipod
-#        itarget = TARGET[type]
-#        i == itarget && continue
-#        if j == 1
-#            isblocked(state, i, itarget) && continue
-#            jtarget = 3
-#            if haskey(state, (itarget, 3))
-#                state[(itarget, 3)] == type || continue
-#                jtarget = 2
-#            end
-#            newstate = move(state, (i, j), (itarget, jtarget))
-#            e = sum(abs, (itarget, jtarget) .- (i, j)) * ENERGY[type]
-#            (!haskey(queue, newstate) || queue[newstate] > energy+e) && (queue[newstate] = energy + e)
-#        else
-#            j == 3 && haskey(state, (i, 2)) && continue
-#            if !haskey(state, (itarget, 3)) || state[(itarget, 2)] == type
-#                if !isblocked(state, i, itarget)
-#                    jtarget = haskey(state, (itarget, 3)) ? 2 : 3
-#                    newstate = move(state, (i, j), (itarget, jtarget))
-#                    e = (sum(abs, (itarget, jtarget) .- (i, 1)) + j-1) * ENERGY[type]
-#                    (!haskey(queue, newstate) || queue[newstate] > energy+e) && (queue[newstate] = energy + e)
-#                end
-#            end
-#            for itarget in (1, 2, 4, 6, 8, 10, 11)
-#                if !isblocked(state, i, itarget)
-#                    jtarget = 1
-#                    newstate = move(state, (i, j), (itarget, jtarget))
-#                    e = (sum(abs, (itarget, jtarget) .- (i, 1)) + j-1) * ENERGY[type]
-#                    (!haskey(queue, newstate) || queue[newstate] > energy+e) && (queue[newstate] = energy + e)
-#                end
-#            end
-#        end
-#    end
-#end
-
-
-function solve1(state)
+function solve(state, target=TARGET_STATE)
     energy = 0
     minenergy = typemax(Int)
-    seen = Dict{typeof(state) ,Int}()
+    #seen = Dict{typeof(state) ,Int}()
     queue = PriorityQueue(state => 0)
     while !isempty(queue)
         state, energy = dequeue_pair!(queue)
         energy >= minenergy && continue
-        haskey(seen, state) && seen[state] < energy && continue
-        seen[state] = energy
-        state == TARGET_STATE && (minenergy = min(minenergy, energy))
+        #haskey(seen, state) && seen[state] < energy && continue
+        #seen[state] = energy
+        state == target && (minenergy = min(minenergy, energy))
         update!(queue, state, energy)
     end
-    #return seen
     return minenergy
 end
+
+solve1(state) = solve(state)
 
 ###
 ### Part 2
 ###
 
-function solve2(x)
+const TARGET_STATE2 = Dict(
+    (i, j) => v
+    for (v, i) in TARGET, j in 2:5
+)
 
+function unfold(state)
+    for (i, v3, v4) in zip((3, 5, 7, 9), "DCBA", "DBAC")
+        state = move(state, (i,3), (i,5))
+        state[(i, 3)] = v3
+        state[(i, 4)] = v4
+    end
+    return state
 end
+
+solve2(state) = solve(unfold(state), TARGET_STATE2)
 
 end  # module
