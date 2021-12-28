@@ -3,7 +3,7 @@ include("utils.jl")
 using .Utils
 import .Utils: parse_input
 
-export solve1, solve2, parse_input
+export solve1, parse_input
 
 ###
 ### Parse

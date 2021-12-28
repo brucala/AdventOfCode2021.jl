@@ -23,10 +23,10 @@ mod w 2
 """
 )
 
-#@testset "Day$nday tests" begin
-#    @test solve1(test) == ?
-    #@test solve2(test) == ?
-#end
+@testset "Day$nday tests" begin
+    @test Day24.runall(test, [8]) == (0, 0, 0, 1)
+    @test Day24.runall(test, [5]) == (1, 0, 1, 0)
+end
 
 @testset "Day$nday solutions" begin
     @test solve1(data) == 59998426997979

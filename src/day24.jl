@@ -65,7 +65,7 @@ function runall(program, model_number)
         ins === :inp && (i+=1)
         run(alu, model_number[i])
     end
-    return alu.z#, alu.y, alu.x, alu.w
+    return alu.z, alu.y, alu.x, alu.w
 end
 
 # foreach(println, [d for d in data if d[1] === :inp || d[2] === :z])
@@ -76,17 +76,17 @@ maxz = Dict(
     14 => 13,
     13 => 14*26,
     12 => 14*26^2,
-    11 => 14*26^2,
-    10 => 14*26^3,
-    9  => 14*26^4,
-    8  => 14*26^4,
-    7  => 14*26^4,
-    6  => 14*26^5,
-    5  => 14*26^5,
-    4  => 14*26^5,
-    3  => 14*26^5,
-    2  => 14*26^5,
-    1  => 14*26^5,
+    11 => 14*26,
+    10 => 14*26^2,
+    9  => 14*26^3,
+    8  => 14*26^2,
+    7  => 14*26,
+    6  => 14*26^2,
+    5  => 14*26^3,
+    4  => 14*26^2,
+    3  => 14*26^1,
+    2  => 14,
+    1  => 14,
 )
 
 function solve(x, n, func)
@@ -118,7 +118,7 @@ function solve(x, n, func)
                 run(alu, model_number[i])
             end
         end
-        ok && alu.z == 0 && return model_number |> join
+        ok && alu.z == 0 && return model_number |> join |> toint
         model_number, i = func(model_number, i)
         alu = checkpoint[i]
     end
