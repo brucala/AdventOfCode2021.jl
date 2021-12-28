@@ -24,7 +24,7 @@ end
 
 @testset "Day$nday solutions" begin
     @test solve1(data) == 12530
-    #@test solve2(data) == ?
+    @test solve2(data) == 50492
 end
 
 end  # module
